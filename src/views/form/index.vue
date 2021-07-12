@@ -48,6 +48,9 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
+import { mapGetters } from 'vuex'
+
 export default {
   data() {
     return {
@@ -60,8 +63,26 @@ export default {
         type: [],
         resource: '',
         desc: ''
-      }
+      },
+      currentTime: ''
     }
+  },
+  computed: {
+    ...mapGetters([
+      'name'
+    ])
+  },
+  watch: {
+    currentTime() {
+      const message = '大家好，当前值被修改了，现在是北京时间 ' + this.currentTime
+      console.log(message)
+      this.form.name = message
+    }
+  },
+  created() {
+    window.setInterval(() => {
+      this.currentTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+    }, 1000)
   },
   methods: {
     onSubmit() {
