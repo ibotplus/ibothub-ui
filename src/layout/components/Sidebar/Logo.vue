@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import zxLogo from '@/assets/images/zhengxin_logo_600_230.png'
 export default {
   name: 'SidebarLogo',
   props: {
@@ -24,8 +25,8 @@ export default {
   },
   data() {
     return {
-      title: 'Vue Admin Template',
-      logo: 'https://wpimg.wallstcn.com/69a1c46c-eb1c-4b46-8bd4-e9e686ef5251.png'
+      title: '正欣会计管理系统',
+      logo: zxLogo
     }
   }
 }
@@ -55,14 +56,13 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 32px;
-      height: 32px;
+      height: 50px;
       vertical-align: middle;
       margin-right: 12px;
     }
 
     & .sidebar-title {
-      display: inline-block;
+      display: none;
       margin: 0;
       color: #fff;
       font-weight: 600;
