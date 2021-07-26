@@ -1,4 +1,4 @@
-# 
+# 基于 vue-element-template 的修改点
 
 ## 修改点
 
@@ -34,5 +34,6 @@ config.headers['Authorization'] = getToken()
 [Remove existing routes](https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465)
 
 ### 分页
+详见 `components/Pageable`
 
 ### 面包屑导航修改 breadcrumb
