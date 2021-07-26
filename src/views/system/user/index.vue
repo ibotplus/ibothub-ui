@@ -78,7 +78,7 @@
     <Pageable :total="total" @fetchData="fetchData" />
 
     <el-dialog :visible.sync="detailFormVisible" :close-on-click-modal="false">
-      <el-form ref="detailForm" :model="detailForm">
+      <el-form ref="detailForm" :model="detailForm" size="mini">
         <el-form-item label="用户账号">
           <el-input v-model="detailForm.username" />
         </el-form-item>
@@ -88,9 +88,47 @@
         <el-form-item label="密码">
           <el-input v-model="detailForm.password" />
         </el-form-item>
+        <el-form-item label="工号">
+          <el-input v-model="detailForm.jobNumber" />
+        </el-form-item>
+        <el-form-item label="身份证">
+          <el-input v-model="detailForm.idCard" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-input v-model="detailForm.sex" />
+        </el-form-item>
+        <el-form-item label="生日">
+          <el-input v-model="detailForm.birthday" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="detailForm.email" />
+        </el-form-item>
+        <el-form-item label="电话">
+          <el-input v-model="detailForm.phone" />
+        </el-form-item>
+        <el-form-item label="所属角色">
+          <el-select
+            v-model="detailForm.roleList"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="fetchRoleList"
+            :loading="listLoading"
+          >
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="detailForm.remark" type="textarea" />
         </el-form-item>
+
         <el-form-item align="right">
           <el-button type="primary" @click="handleSave()">确定</el-button>
           <el-button @click="handleClose()">取消</el-button>
@@ -102,6 +140,7 @@
 
 <script>
 import { queryByPage, save, remove } from '@/api/user'
+import { queryList } from '@/api/role'
 import Pageable from '@/components/Pageable'
 import { removeArrayElement } from '@/utils/index'
 
@@ -115,11 +154,18 @@ export default {
       list: null,
       listLoading: true,
       detailFormVisible: false,
-      detailForm: {}
+      detailForm: {},
+      roleList: []
+    }
+  },
+  watch() {
+    {
+      return false
     }
   },
   created() {
     this.fetchData(this.pageNum, this.pageSize)
+    this.fetchRoleList()
   },
   methods: {
     fetchData(pageNum, pageSize) {
@@ -152,6 +198,11 @@ export default {
     handleRemove(row) {
       remove(row.id).then(() => {
         removeArrayElement(this.list, row.id)
+      })
+    },
+    fetchRoleList(query) {
+      queryList(query).then((response) => {
+        this.roleList = response.data
       })
     }
   }

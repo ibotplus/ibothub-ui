@@ -73,3 +73,12 @@ div:focus {
   padding: 0 0 10px;
   text-align: right;
 }
+
+.el-dialog__body form{
+  height: 500px;
+  overflow: auto;
+  padding: 0 20px;
+}
+.el-textarea__inner{
+  height: 120px;
+}
