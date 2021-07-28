@@ -115,6 +115,25 @@
         <el-form-item label="电话">
           <el-input v-model="detailForm.phone" />
         </el-form-item>
+        <el-form-item label="所属部门">
+          <el-select
+            v-model="detailForm.deptList"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="fetchDeptList"
+            :loading="listLoading"
+          >
+            <el-option
+              v-for="item in deptList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="所属角色">
           <el-select
             v-model="detailForm.roleList"
@@ -144,7 +163,8 @@
 
 <script>
 import { queryByPage, save, remove, queryById } from '@/api/user'
-import { queryList } from '@/api/role'
+import { queryList as queryRoleList } from '@/api/role'
+import { queryList as queryDeptList } from '@/api/dept'
 import Pageable from '@/components/Pageable'
 import { removeArrayElement } from '@/utils/index'
 import Dialog from '@/components/Dialog'
@@ -161,7 +181,9 @@ export default {
       detailFormVisible: false,
       detailForm: {},
       roleKeyword: '',
-      roleList: []
+      roleList: [],
+      deptKeyword: '',
+      deptList: []
     }
   },
   watch: {
@@ -172,12 +194,17 @@ export default {
           this.roleKeyword = ''
           this.fetchRoleList()
         }
+        if (this.keyKeyword !== '') {
+          this.keyKeyword = ''
+          this.fetchDeptList()
+        }
       }
     }
   },
   created() {
     this.fetchData(this.pageNum, this.pageSize)
     this.fetchRoleList()
+    this.fetchDeptList()
   },
   methods: {
     fetchData(pageNum, pageSize) {
@@ -224,9 +251,19 @@ export default {
       if (query) {
         this.roleKeyword = query
       }
-      queryList(query).then((response) => {
+      queryRoleList(query).then((response) => {
         response.data.forEach((role) => {
           this.roleList.push({ id: role.id, name: role.name })
+        })
+      })
+    },
+    fetchDeptList(query) {
+      if (query) {
+        this.deptKeyword = query
+      }
+      queryDeptList(query).then((response) => {
+        response.data.forEach((dept) => {
+          this.deptList.push({ id: dept.id, name: dept.name })
         })
       })
     }

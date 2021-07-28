@@ -41,8 +41,30 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="detailFormVisible" :close-on-click-modal="false">
+    <Dialog
+      :detail-form-visible="detailFormVisible"
+      @updateDialogVisible="updateDialogVisible"
+      @handleDialogSave="handleDialogSave"
+    >
       <el-form ref="detailForm" :model="detailForm">
+        <el-form-item label="上级部门">
+          <el-select
+            v-model="detailForm.parentId"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="fetchDeptList"
+            :loading="listLoading"
+          >
+            <el-option
+              v-for="item in deptList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="部门名称">
           <el-input v-model="detailForm.name" />
         </el-form-item>
@@ -52,19 +74,18 @@
         <el-form-item label="备注">
           <el-input v-model="detailForm.remark" type="textarea" />
         </el-form-item>
-        <el-form-item align="right">
-          <el-button type="primary" @click="handleSave()">确定</el-button>
-          <el-button @click="handleClose()">取消</el-button>
-        </el-form-item>
       </el-form>
-    </el-dialog>
+    </Dialog>
   </div>
 </template>
 
 <script>
 import { queryByPage, save, remove } from '@/api/dept'
+import Dialog from '@/components/Dialog'
+import { queryList as queryDeptList } from '@/api/dept'
 
 export default {
+  components: { Dialog },
   data() {
     return {
       list: null,
@@ -74,11 +95,13 @@ export default {
       detailFormVisible: false,
       detailForm: {
         name: ''
-      }
+      },
+      deptList: []
     }
   },
   created() {
     this.fetchData()
+    this.fetchDeptList()
   },
   methods: {
     fetchData() {
@@ -94,12 +117,15 @@ export default {
       this.detailForm = {}
       this.detailFormVisible = true
     },
-    handleSave() {
+    handleDialogSave() {
       console.log(this.detailForm)
       save(this.detailForm).then(() => {
-        this.handleClose()
+        this.updateDialogVisible(false)
         this.fetchData()
       })
+    },
+    updateDialogVisible(val) {
+      this.detailFormVisible = val
     },
     handleEdit(row) {
       this.detailForm = row
@@ -110,8 +136,15 @@ export default {
         this.fetchData()
       })
     },
-    handleClose() {
-      this.detailFormVisible = false
+    fetchDeptList(query) {
+      if (query) {
+        this.deptKeyword = query
+      }
+      queryDeptList(query).then((response) => {
+        response.data.forEach((dept) => {
+          this.deptList.push({ id: dept.id, name: dept.name })
+        })
+      })
     }
   }
 }
