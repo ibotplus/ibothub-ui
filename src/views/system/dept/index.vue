@@ -12,14 +12,12 @@
             <span>{{ node.label }}</span>
             <span>
               <el-button
-                class="ibot-tree-btn"
                 type="text"
                 icon="el-icon-circle-plus-outline"
                 @click.stop="handleCreate(node)"
               />
 
               <el-button
-                class="ibot-tree-btn"
                 type="text"
                 icon="el-icon-edit"
                 @click.stop="handleEdit(node)"
@@ -30,7 +28,11 @@
                 title="确定删除吗？"
                 @onConfirm="handleRemove(node.id)"
               >
-                <el-button slot="reference" type="text">
+                <el-button
+                  slot="reference"
+                  type="text"
+                  class="ibot-tree-btn"
+                >
                   <i class="el-icon-delete" />
                 </el-button>
               </el-popconfirm>
@@ -250,7 +252,7 @@ export default {
 </script>
 <style lang="css" scoped>
 .ibot-tree-btn{
-  padding-right: 10px;
+  margin-left: 10px;
 }
 .custom-tree-node {
     flex: 1;
