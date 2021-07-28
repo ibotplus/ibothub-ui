@@ -77,7 +77,11 @@
 
     <Pageable :total="total" @fetchData="fetchData" />
 
-    <el-dialog :visible.sync="detailFormVisible" :close-on-click-modal="false">
+    <Dialog
+      :detail-form-visible="detailFormVisible"
+      @updateDialogVisible="updateDialogVisible"
+      @handleDialogSave="handleDialogSave"
+    >
       <el-form ref="detailForm" :model="detailForm" size="mini">
         <el-form-item label="用户账号">
           <el-input v-model="detailForm.username" />
@@ -98,7 +102,12 @@
           <el-input v-model="detailForm.sex" />
         </el-form-item>
         <el-form-item label="生日">
-          <el-input v-model="detailForm.birthday" />
+          <el-date-picker
+            v-model="detailForm.birthday"
+            type="date"
+            value-format="yyyy-MM-dd"
+            placeholder="选择日期"
+          />
         </el-form-item>
         <el-form-item label="邮箱">
           <el-input v-model="detailForm.email" />
@@ -128,24 +137,20 @@
         <el-form-item label="备注">
           <el-input v-model="detailForm.remark" type="textarea" />
         </el-form-item>
-
-        <el-form-item align="right">
-          <el-button type="primary" @click="handleSave()">确定</el-button>
-          <el-button @click="handleClose()">取消</el-button>
-        </el-form-item>
       </el-form>
-    </el-dialog>
+    </Dialog>
   </div>
 </template>
 
 <script>
-import { queryByPage, save, remove } from '@/api/user'
+import { queryByPage, save, remove, queryById } from '@/api/user'
 import { queryList } from '@/api/role'
 import Pageable from '@/components/Pageable'
 import { removeArrayElement } from '@/utils/index'
+import Dialog from '@/components/Dialog'
 
 export default {
-  components: { Pageable },
+  components: { Pageable, Dialog },
   data() {
     return {
       total: 0,
@@ -155,12 +160,19 @@ export default {
       listLoading: true,
       detailFormVisible: false,
       detailForm: {},
+      roleKeyword: '',
       roleList: []
     }
   },
-  watch() {
-    {
-      return false
+  watch: {
+    detailFormVisible(val) {
+      if (!val) {
+        // 表单关闭
+        if (this.roleKeyword !== '') {
+          this.roleKeyword = ''
+          this.fetchRoleList()
+        }
+      }
     }
   },
   created() {
@@ -183,15 +195,23 @@ export default {
       this.detailFormVisible = true
     },
     handleEdit(row) {
-      this.detailForm = row
-      this.detailFormVisible = true
+      queryById(row.id).then((res) => {
+        this.detailForm = { ...res.data }
+        this.detailForm.roleList = []
+        if (res.data.roleList) {
+          res.data.roleList.forEach((role) => {
+            this.detailForm.roleList.push(role.id)
+          })
+        }
+        this.detailFormVisible = true
+      })
     },
-    handleClose() {
-      this.detailFormVisible = false
+    updateDialogVisible(val) {
+      this.detailFormVisible = val
     },
-    handleSave() {
+    handleDialogSave() {
       save(this.detailForm).then(() => {
-        this.handleClose()
+        this.updateDialogVisible(false)
         this.fetchData(this.pageNum, this.pageSize)
       })
     },
@@ -201,8 +221,13 @@ export default {
       })
     },
     fetchRoleList(query) {
+      if (query) {
+        this.roleKeyword = query
+      }
       queryList(query).then((response) => {
-        this.roleList = response.data
+        response.data.forEach((role) => {
+          this.roleList.push({ id: role.id, name: role.name })
+        })
       })
     }
   }

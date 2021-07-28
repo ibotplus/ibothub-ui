@@ -49,6 +49,13 @@ export function queryByPage(pageNum, pageSize) {
   })
 }
 
+export function queryById(id) {
+  return request({
+    url: `/api/auth/user/${id}`,
+    method: 'get'
+  })
+}
+
 export function save(data) {
   let method = 'post'
   if (data.id && data.id !== '') {
