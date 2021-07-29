@@ -1,6 +1,6 @@
 # 基于 vue-element-template 的修改点
 
-[![Build Status](https://github.com/ibotplus/ibothub-ui/actions/workflows/maven.yml/badge.svg)](https://github.com/ibotplus/ibothub-ui/actions)
+[![Build Status](https://github.com/ibotplus/ibothub-ui/actions/workflows/nodejs.yml/badge.svg)](https://github.com/ibotplus/ibothub-ui/actions)
 ![license](https://img.shields.io/github/license/mashape/apistatus.svg)
 
 ## 修改点
