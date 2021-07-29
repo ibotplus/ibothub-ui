@@ -37,10 +37,11 @@ export function routes() {
   })
 }
 
-export function queryByPage(pageNum, pageSize) {
+export function queryByPage(pageNum, pageSize, condition) {
   var data = {
     pageNum,
-    pageSize
+    pageSize,
+    ...condition
   }
   return request({
     url: '/api/auth/user/queryByPage',

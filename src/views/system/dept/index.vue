@@ -8,7 +8,7 @@
           :props="defaultProps"
           default-expand-all
         >
-          <span slot-scope="{ node }" class="custom-tree-node">
+          <span slot-scope="{ node }" class="custom-tree-node" @click.stop="fetchUserData(pageNum, pageSize, node)">
             <span>{{ node.label }}</span>
             <span>
               <el-button
@@ -26,12 +26,13 @@
               <el-popconfirm
                 v-if="node.key!=='ROOT_COMPANY'"
                 title="确定删除吗？"
-                @onConfirm="handleRemove(node.id)"
+                @onConfirm="handleRemove(node.key)"
               >
                 <el-button
                   slot="reference"
                   type="text"
                   class="ibot-tree-btn"
+                  @click.stop="()=>{}"
                 >
                   <i class="el-icon-delete" />
                 </el-button>
@@ -149,6 +150,7 @@ export default {
       userList: [],
       pageNum: 1,
       pageSize: 10,
+      total: 0,
       listLoading: false,
       detailFormVisible: false,
       detailForm: {
@@ -165,12 +167,16 @@ export default {
   created() {
     this.fetchData()
     // this.fetchDeptList()
-    this.fetchUserData()
+    this.fetchUserData(this.pageNum, this.pageSize)
   },
   methods: {
-    fetchUserData() {
+    fetchUserData(pageNum, pageSize, node) {
       this.listLoading = true
-      queryUserByPage(this.pageNum, this.pageSize).then(response => {
+      const condition = {}
+      if (node) {
+        condition.deptId = node.key
+      }
+      queryUserByPage(pageNum, pageSize, condition).then(response => {
         this.userList = response.data.records
         this.total = response.data.total
         this.pageNum = response.data.current
@@ -232,8 +238,8 @@ export default {
       this.detailForm = { id: node.key, name: node.label, parentId: node.parent.key || '', key: node.data.key }
       this.detailFormVisible = true
     },
-    handleRemove(row) {
-      remove(row.id).then(() => {
+    handleRemove(id) {
+      remove(id).then(() => {
         this.fetchData()
       })
     },

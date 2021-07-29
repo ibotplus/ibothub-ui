@@ -248,6 +248,7 @@ export default {
       })
     },
     fetchRoleList(query) {
+      this.roleList = []
       if (query) {
         this.roleKeyword = query
       }
@@ -258,6 +259,7 @@ export default {
       })
     },
     fetchDeptList(query) {
+      this.deptList = []
       if (query) {
         this.deptKeyword = query
       }
