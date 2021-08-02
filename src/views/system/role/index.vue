@@ -13,7 +13,17 @@
       border
       fit
       highlight-current-row
+      default-expand-all
     >
+      <el-table-column type="expand">
+        <template slot-scope="props">
+          <el-form label-position="left" inline class="demo-table-expand">
+            <el-tag v-for="(user, index) in props.row.userList" :key="index">
+              {{ user.usernameCN }}
+            </el-tag>
+          </el-form>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="序号" width="95">
         <template slot-scope="scope">
           {{ scope.$index + 1 }}
@@ -124,3 +134,21 @@ export default {
   }
 }
 </script>
+<style lang="css" scoped>
+  .demo-table-expand {
+    font-size: 0;
+  }
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
+  .demo-table-expand .el-tag {
+    margin-left: 10px;
+  }
+
+</style>
