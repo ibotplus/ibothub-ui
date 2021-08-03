@@ -58,7 +58,11 @@
 
     <Pageable :total="total" :fetch-data-method="'fetchData'" @fetchData="fetchData" />
 
-    <el-dialog :visible.sync="detailFormVisible" :close-on-click-modal="false">
+    <Dialog
+      :detail-form-visible="detailFormVisible"
+      @updateDialogVisible="updateDialogVisible"
+      @handleDialogSave="handleDialogSave"
+    >
       <el-form ref="detailForm" :model="detailForm">
         <el-form-item label="角色名称">
           <el-input v-model="detailForm.name" />
@@ -66,12 +70,8 @@
         <el-form-item label="角色标识">
           <el-input v-model="detailForm.key" />
         </el-form-item>
-        <el-form-item align="right">
-          <el-button type="primary" @click="handleSave()">确定</el-button>
-          <el-button @click="handleClose()">取消</el-button>
-        </el-form-item>
       </el-form>
-    </el-dialog>
+    </Dialog>
 
   </div>
 </template>
@@ -79,10 +79,11 @@
 <script>
 import { queryByPage, save, remove } from '@/api/role'
 import Pageable from '@/components/Pageable'
+import Dialog from '@/components/Dialog'
 import { removeArrayElement } from '@/utils/index'
 
 export default {
-  components: { Pageable },
+  components: { Pageable, Dialog },
   data() {
     return {
       list: null,
@@ -114,17 +115,18 @@ export default {
       this.detailFormVisible = true
     },
     handleEdit(row) {
-      this.detailForm = row
+      this.detailForm = { ...row }
       this.detailFormVisible = true
     },
-    handleClose() {
-      this.detailFormVisible = false
-    },
-    handleSave() {
+    handleDialogSave() {
+      console.log(this.detailForm)
       save(this.detailForm).then(() => {
-        this.handleClose()
+        this.updateDialogVisible(false)
         this.fetchData(this.pageNum, this.pageSize)
       })
+    },
+    updateDialogVisible(val) {
+      this.detailFormVisible = val
     },
     handleRemove(row) {
       remove(row.id).then(() => {
