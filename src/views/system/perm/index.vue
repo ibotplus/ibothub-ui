@@ -81,7 +81,15 @@
     >
       <el-form ref="detailForm" :model="detailForm">
         <el-form-item label="上级权限">
-          <el-input v-model="detailForm.parentId" />
+          <el-select-tree
+            v-model="detailForm.parentId"
+            width="300px"
+            clearable
+            check-strictly
+            default-expand-all
+            :data="treeList"
+            :props="defaultProps"
+          />
         </el-form-item>
         <el-form-item label="权限名称">
           <el-input v-model="detailForm.title" />
@@ -123,16 +131,21 @@
 <script>
 import { queryList, save, remove } from '@/api/permission'
 import Dialog from '@/components/Dialog'
-import { removeArrayElement } from '@/utils/index'
+import ElSelectTree from 'el-select-tree'
 
 export default {
-  components: { Dialog },
+  components: { Dialog, ElSelectTree },
   data() {
     return {
       treeList: [],
       listLoading: true,
       detailFormVisible: false,
-      detailForm: { }
+      detailForm: { },
+      defaultProps: {
+        children: 'children',
+        label: 'title',
+        value: 'id'
+      }
     }
   },
   created() {
@@ -151,6 +164,7 @@ export default {
             treeList.push(item)
           })
         this.treeList = treeList
+        console.log(treeList)
         this.listLoading = false
       })
     },

@@ -82,7 +82,7 @@
       @updateDialogVisible="updateDialogVisible"
       @handleDialogSave="handleDialogSave"
     >
-      <el-form ref="detailForm" :model="detailForm" size="mini">
+      <el-form ref="detailForm" :model="detailForm">
         <el-form-item label="用户账号">
           <el-input v-model="detailForm.username" />
         </el-form-item>

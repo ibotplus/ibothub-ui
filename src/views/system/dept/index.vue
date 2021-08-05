@@ -101,22 +101,15 @@
         >
           <el-form ref="detailForm" :model="detailForm">
             <el-form-item label="上级部门">
-              <el-select
+              <el-select-tree
                 v-model="detailForm.parentId"
-                filterable
-                remote
-                reserve-keyword
-                placeholder="请输入关键词"
-                :remote-method="fetchDeptList"
-                :loading="listLoading"
-              >
-                <el-option
-                  v-for="(item, index) in deptList"
-                  :key="index"
-                  :label="item.name"
-                  :value="item.id"
-                />
-              </el-select>
+                width="300px"
+                clearable
+                check-strictly
+                default-expand-all
+                :data="treeList"
+                :props="deptTreeProps"
+              />
             </el-form-item>
             <el-form-item label="部门名称">
               <el-input v-model="detailForm.name" />
@@ -135,14 +128,14 @@
 </template>
 
 <script>
-import { queryByPage, save, remove } from '@/api/dept'
+import { queryList as queryDeptList, save, remove } from '@/api/dept'
 import Dialog from '@/components/Dialog'
-import { queryList as queryDeptList } from '@/api/dept'
 import { queryByPage as queryUserByPage } from '@/api/user'
 import Pageable from '@/components/Pageable'
+import ElSelectTree from 'el-select-tree'
 
 export default {
-  components: { Dialog, Pageable },
+  components: { Dialog, Pageable, ElSelectTree },
   data() {
     return {
       list: [],
@@ -161,6 +154,11 @@ export default {
         children: 'children',
         label: 'name',
         id: 'id'
+      },
+      deptTreeProps: {
+        children: 'children',
+        label: 'name',
+        value: 'id'
       }
     }
   },
@@ -186,7 +184,7 @@ export default {
     },
     fetchData() {
       this.deptList = []
-      this.treeList = []
+      const tmpTreeList = []
       const _this = this
 
       // 渲染部门树
@@ -200,9 +198,11 @@ export default {
         list.filter(item => item.parentId === null)
           .forEach(item => {
             _this.fillChildren(list, item)
-            _this.treeList.push(item)
+            tmpTreeList.push(item)
           })
       })
+      _this.treeList = tmpTreeList
+      console.log(_this.treeList)
     },
     fillChildren(list, parent) {
       list.forEach(elem => {
@@ -221,7 +221,7 @@ export default {
     },
     handleCreate(node) {
       console.log(node)
-      this.detailForm = { parentId: node.parent.key || '' }
+      this.detailForm = { parentId: node.key || '' }
       this.detailFormVisible = true
     },
     handleDialogSave() {
