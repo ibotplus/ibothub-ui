@@ -68,7 +68,7 @@
             title="确定删除吗？"
             @onConfirm="handleRemove(scope.row)"
           >
-            <el-button slot="reference" type="text" size="small">删除</el-button>
+            <el-button slot="reference" type="text" size="small" class="danger">删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>

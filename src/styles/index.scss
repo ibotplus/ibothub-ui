@@ -82,3 +82,9 @@ div:focus {
 .el-textarea__inner{
   height: 120px;
 }
+button.danger{
+  color: #F56C6C !important;
+}
+button.danger:hover{
+  color: #f78989;
+}

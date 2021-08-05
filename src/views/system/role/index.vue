@@ -21,6 +21,10 @@
             <el-tag v-for="(user, index) in props.row.userList" :key="index">
               {{ user.usernameCN }}
             </el-tag>
+            <br>
+            <el-tag v-for="(item, index) in props.row.permList" :key="item.id+index" type="success">
+              {{ item.title }}
+            </el-tag>
           </el-form>
         </template>
       </el-table-column>
@@ -50,7 +54,7 @@
             title="确定删除吗？"
             @onConfirm="handleRemove(scope.row)"
           >
-            <el-button slot="reference" type="text" size="small">删除</el-button>
+            <el-button slot="reference" type="text" size="small" class="danger">删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
@@ -70,6 +74,18 @@
         <el-form-item label="角色标识">
           <el-input v-model="detailForm.key" />
         </el-form-item>
+        <el-form-item label="权限">
+          <el-select-tree
+            v-model="detailForm.permIdList"
+            width="300px"
+            multiple
+            clearable
+            check-strictly
+            default-expand-all
+            :data="permTreeList"
+            :props="defaultPermProps"
+          />
+        </el-form-item>
       </el-form>
     </Dialog>
 
@@ -81,23 +97,32 @@ import { queryByPage, save, remove } from '@/api/role'
 import Pageable from '@/components/Pageable'
 import Dialog from '@/components/Dialog'
 import { removeArrayElement } from '@/utils/index'
+import { queryList as queryPermList } from '@/api/permission'
+import ElSelectTree from 'el-select-tree'
 
 export default {
-  components: { Pageable, Dialog },
+  components: { Pageable, Dialog, ElSelectTree },
   data() {
     return {
-      list: null,
+      list: [],
       listLoading: true,
       total: 0,
       pageNum: 1,
       pageSize: 10,
       detailFormVisible: false,
-      detailForm: {}
+      detailForm: { permIdList: [] },
+      permTreeList: [],
+      defaultPermProps: {
+        children: 'children',
+        label: 'title',
+        value: 'id'
+      }
 
     }
   },
   created() {
     this.fetchData(this.pageNum, this.pageSize)
+    this.fetchPermData()
   },
   methods: {
     fetchData(pageNum, pageSize) {
@@ -111,11 +136,17 @@ export default {
       })
     },
     handleCreate() {
-      this.detailForm = {}
+      this.detailForm = { permIdList: [] }
       this.detailFormVisible = true
     },
     handleEdit(row) {
       this.detailForm = { ...row }
+      this.detailForm.permIdList = []
+      if (row.permList) {
+        row.permList.forEach(item => {
+          this.detailForm.permIdList.push(item.id)
+        })
+      }
       this.detailFormVisible = true
     },
     handleDialogSave() {
@@ -131,6 +162,35 @@ export default {
     handleRemove(row) {
       remove(row.id).then(() => {
         removeArrayElement(this.list, row.id)
+      })
+    },
+    fetchPermData() {
+      queryPermList().then(response => {
+        const _this = this
+        const list = response.data
+        const permTreeList = []
+        list.filter(item => item.parentId === null)
+          .forEach(item => {
+            _this.fillChildren(list, item)
+            permTreeList.push(item)
+          })
+        this.permTreeList = permTreeList
+        console.log(permTreeList)
+      })
+    },
+    fillChildren(routeList, parent) {
+      routeList.forEach(elem => {
+        if (elem.parentId === parent.id) {
+          this.fillChildren(routeList, elem)
+          if (elem.children && elem.children.length === 0) {
+            delete elem['children']
+            delete elem['redirect']
+          }
+          if (!parent.children) {
+            parent.children = []
+          }
+          parent.children.push(elem)
+        }
       })
     }
   }
@@ -150,7 +210,7 @@ export default {
     width: 50%;
   }
   .demo-table-expand .el-tag {
-    margin-left: 10px;
+    margin: 10px 10px 0 0;
   }
 
 </style>
