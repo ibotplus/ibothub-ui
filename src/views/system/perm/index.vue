@@ -38,9 +38,24 @@
           {{ scope.row.path }}
         </template>
       </el-table-column>
-      <el-table-column label="redirect" width="300">
+      <el-table-column label="排序" width="80">
+        <template slot-scope="scope">
+          {{ scope.row.order }}
+        </template>
+      </el-table-column>
+      <el-table-column label="redirect" width="200">
         <template slot-scope="scope">
           {{ scope.row.redirect }}
+        </template>
+      </el-table-column>
+      <el-table-column label="类型" width="120">
+        <template slot-scope="scope">
+          {{ scope.row.type }}
+        </template>
+      </el-table-column>
+      <el-table-column label="菜单" width="80">
+        <template slot-scope="scope">
+          {{ scope.row.isMenu===1?'是':'否' }}
         </template>
       </el-table-column>
       <el-table-column
@@ -53,23 +68,84 @@
             title="确定删除吗？"
             @onConfirm="handleRemove(scope.row)"
           >
-            <el-button slot="reference" type="text" size="small">删除</el-button>
+            <el-button slot="reference" type="text" size="small" class="danger">删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
 
+    <Dialog
+      :detail-form-visible="detailFormVisible"
+      @updateDialogVisible="updateDialogVisible"
+      @handleDialogSave="handleDialogSave"
+    >
+      <el-form ref="detailForm" :model="detailForm">
+        <el-form-item label="上级权限">
+          <el-select-tree
+            v-model="detailForm.parentId"
+            width="300px"
+            clearable
+            check-strictly
+            default-expand-all
+            :data="treeList"
+            :props="defaultProps"
+          />
+        </el-form-item>
+        <el-form-item label="权限名称">
+          <el-input v-model="detailForm.title" />
+        </el-form-item>
+        <el-form-item label="权限标识">
+          <el-input v-model="detailForm.key" />
+        </el-form-item>
+        <el-form-item label="访问路径">
+          <el-input v-model="detailForm.path" />
+        </el-form-item>
+        <el-form-item label="跳转路径">
+          <el-input v-model="detailForm.redirect" :disabled="detailForm.isLayout=='0'" />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number v-model="detailForm.order" :min="1" :max="100" />
+        </el-form-item>
+        <el-form-item label="图标">
+          <el-input v-model="detailForm.iconFont" />
+        </el-form-item>
+        <el-form-item label="Layout">
+          <el-radio v-model="detailForm.isLayout" :label="1">是</el-radio>
+          <el-radio v-model="detailForm.isLayout" :label="0">否</el-radio>
+        </el-form-item>
+        <el-form-item label="是否是菜单">
+          <el-radio v-model="detailForm.isMenu" :label="1">是</el-radio>
+          <el-radio v-model="detailForm.isMenu" :label="0">否</el-radio>
+        </el-form-item>
+        <el-form-item label="类型（分类/模块/按钮）">
+          <el-radio v-model="detailForm.type" label="CATEGORY">分类</el-radio>
+          <el-radio v-model="detailForm.type" label="MODULE">模块</el-radio>
+          <el-radio v-model="detailForm.type" label="BUTTON">按钮</el-radio>
+        </el-form-item>
+      </el-form>
+    </Dialog>
+
   </div>
 </template>
 
 <script>
-import { queryByPage } from '@/api/permission'
+import { queryList, save, remove } from '@/api/permission'
+import Dialog from '@/components/Dialog'
+import ElSelectTree from 'el-select-tree'
 
 export default {
+  components: { Dialog, ElSelectTree },
   data() {
     return {
       treeList: [],
-      listLoading: true
+      listLoading: true,
+      detailFormVisible: false,
+      detailForm: { },
+      defaultProps: {
+        children: 'children',
+        label: 'title',
+        value: 'id'
+      }
     }
   },
   created() {
@@ -78,9 +154,9 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      queryByPage(1, 10).then(response => {
+      queryList().then(response => {
         const _this = this
-        const list = response.data.records
+        const list = response.data
         const treeList = []
         list.filter(item => item.parentId === null)
           .forEach(item => {
@@ -88,6 +164,7 @@ export default {
             treeList.push(item)
           })
         this.treeList = treeList
+        console.log(treeList)
         this.listLoading = false
       })
     },
@@ -105,6 +182,37 @@ export default {
           parent.children.push(elem)
         }
       })
+    },
+    async handleDialogSave() {
+      console.log(this.detailForm)
+      if (this.detailForm.isLayout === '1') {
+        this.detailForm.component = 'Layout'
+      } else {
+        this.detailForm.component = null
+      }
+      await save(this.detailForm)
+      this.updateDialogVisible(false)
+      this.fetchData()
+    },
+    updateDialogVisible(val) {
+      this.detailFormVisible = val
+    },
+    handleCreate() {
+      this.detailForm = { isLayout: 0, isMenu: 1, type: 'CATEGORY', order: 1 }
+      this.updateDialogVisible(true)
+    },
+    handleEdit(row) {
+      if (row.component === null) {
+        row.isLayout = 0
+      } else {
+        row.isLayout = 1
+      }
+      this.detailForm = { ...row }
+      this.updateDialogVisible(true)
+    },
+    async handleRemove(row) {
+      await remove(row.id)
+      this.fetchData()
     }
   }
 }

@@ -30,3 +30,15 @@ export function remove(id) {
     method: 'delete'
   })
 }
+
+export function queryList(name) {
+  const data = {}
+  if (name) {
+    data['name'] = name
+  }
+  return request({
+    url: `/api/auth/dept/queryList`,
+    method: 'post',
+    data
+  })
+}

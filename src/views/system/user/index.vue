@@ -69,7 +69,7 @@
             title="确定删除吗？"
             @onConfirm="handleRemove(scope.row)"
           >
-            <el-button slot="reference" type="text" size="small">删除</el-button>
+            <el-button slot="reference" type="text" size="small" class="danger">删除</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
@@ -77,7 +77,11 @@
 
     <Pageable :total="total" @fetchData="fetchData" />
 
-    <el-dialog :visible.sync="detailFormVisible" :close-on-click-modal="false">
+    <Dialog
+      :detail-form-visible="detailFormVisible"
+      @updateDialogVisible="updateDialogVisible"
+      @handleDialogSave="handleDialogSave"
+    >
       <el-form ref="detailForm" :model="detailForm">
         <el-form-item label="用户账号">
           <el-input v-model="detailForm.username" />
@@ -88,25 +92,85 @@
         <el-form-item label="密码">
           <el-input v-model="detailForm.password" />
         </el-form-item>
+        <el-form-item label="工号">
+          <el-input v-model="detailForm.jobNumber" />
+        </el-form-item>
+        <el-form-item label="身份证">
+          <el-input v-model="detailForm.idCard" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-input v-model="detailForm.sex" />
+        </el-form-item>
+        <el-form-item label="生日">
+          <el-date-picker
+            v-model="detailForm.birthday"
+            type="date"
+            value-format="yyyy-MM-dd"
+            placeholder="选择日期"
+          />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="detailForm.email" />
+        </el-form-item>
+        <el-form-item label="电话">
+          <el-input v-model="detailForm.phone" />
+        </el-form-item>
+        <el-form-item label="所属部门">
+          <el-select
+            v-model="detailForm.deptList"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="fetchDeptList"
+            :loading="listLoading"
+          >
+            <el-option
+              v-for="item in deptList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属角色">
+          <el-select
+            v-model="detailForm.roleList"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入关键词"
+            :remote-method="fetchRoleList"
+            :loading="listLoading"
+          >
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="detailForm.remark" type="textarea" />
         </el-form-item>
-        <el-form-item align="right">
-          <el-button type="primary" @click="handleSave()">确定</el-button>
-          <el-button @click="handleClose()">取消</el-button>
-        </el-form-item>
       </el-form>
-    </el-dialog>
+    </Dialog>
   </div>
 </template>
 
 <script>
-import { queryByPage, save, remove } from '@/api/user'
+import { queryByPage, save, remove, queryById } from '@/api/user'
+import { queryList as queryRoleList } from '@/api/role'
+import { queryList as queryDeptList } from '@/api/dept'
 import Pageable from '@/components/Pageable'
 import { removeArrayElement } from '@/utils/index'
+import Dialog from '@/components/Dialog'
 
 export default {
-  components: { Pageable },
+  components: { Pageable, Dialog },
   data() {
     return {
       total: 0,
@@ -115,11 +179,32 @@ export default {
       list: null,
       listLoading: true,
       detailFormVisible: false,
-      detailForm: {}
+      detailForm: {},
+      roleKeyword: '',
+      roleList: [],
+      deptKeyword: '',
+      deptList: []
+    }
+  },
+  watch: {
+    detailFormVisible(val) {
+      if (!val) {
+        // 表单关闭
+        if (this.roleKeyword !== '') {
+          this.roleKeyword = ''
+          this.fetchRoleList()
+        }
+        if (this.keyKeyword !== '') {
+          this.keyKeyword = ''
+          this.fetchDeptList()
+        }
+      }
     }
   },
   created() {
     this.fetchData(this.pageNum, this.pageSize)
+    this.fetchRoleList()
+    this.fetchDeptList()
   },
   methods: {
     fetchData(pageNum, pageSize) {
@@ -137,21 +222,51 @@ export default {
       this.detailFormVisible = true
     },
     handleEdit(row) {
-      this.detailForm = row
-      this.detailFormVisible = true
+      queryById(row.id).then((res) => {
+        this.detailForm = { ...res.data }
+        this.detailForm.roleList = []
+        if (res.data.roleList) {
+          res.data.roleList.forEach((role) => {
+            this.detailForm.roleList.push(role.id)
+          })
+        }
+        this.detailFormVisible = true
+      })
     },
-    handleClose() {
-      this.detailFormVisible = false
+    updateDialogVisible(val) {
+      this.detailFormVisible = val
     },
-    handleSave() {
+    handleDialogSave() {
       save(this.detailForm).then(() => {
-        this.handleClose()
+        this.updateDialogVisible(false)
         this.fetchData(this.pageNum, this.pageSize)
       })
     },
     handleRemove(row) {
       remove(row.id).then(() => {
         removeArrayElement(this.list, row.id)
+      })
+    },
+    fetchRoleList(query) {
+      this.roleList = []
+      if (query) {
+        this.roleKeyword = query
+      }
+      queryRoleList(query).then((response) => {
+        response.data.forEach((role) => {
+          this.roleList.push({ id: role.id, name: role.name })
+        })
+      })
+    },
+    fetchDeptList(query) {
+      this.deptList = []
+      if (query) {
+        this.deptKeyword = query
+      }
+      queryDeptList(query).then((response) => {
+        response.data.forEach((dept) => {
+          this.deptList.push({ id: dept.id, name: dept.name })
+        })
       })
     }
   }
