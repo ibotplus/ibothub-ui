@@ -40,3 +40,6 @@ config.headers['Authorization'] = getToken()
 详见 `components/Pageable`
 
 ### 面包屑导航修改 breadcrumb
+
+### Demo
+![ibothub-ui-demo](docs/ibothub-ui-demo.gif)
