@@ -13,7 +13,8 @@
 
 ### devServer
 
-### request.js 
+### request.js
+
 ```
 config.headers['Authorization'] = getToken()
 ```
@@ -37,9 +38,19 @@ config.headers['Authorization'] = getToken()
 [Remove existing routes](https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465)
 
 ### 分页
+
 详见 `components/Pageable`
 
 ### 面包屑导航修改 breadcrumb
 
 ### Demo
+
 ![ibothub-ui-demo](docs/ibothub-ui-demo.gif)
+
+### 资料
+
+[webpack5 针对vue vue-cli-service 升级指南（一）](https://juejin.cn/post/7095012794814185509)
+
+[webpack5 针对vue vue-cli-service 升级指南（二）](https://juejin.cn/post/7096461367238590477)
+
+[webpack5 针对vue vue-cli-service 升级指南（三）](https://juejin.cn/post/7097990603078074398)
